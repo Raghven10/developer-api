@@ -1,66 +1,59 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+
+import Link from "next/link"
+import { ArrowRight, Code, Key, Zap } from "lucide-react"
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full p-1 mb-8 animate-pulse">
+        <div className="bg-black rounded-full px-4 py-1 text-sm font-medium">
+          New: Llama-3-70b is now available
+        </div>
+      </div>
+
+      <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+        Build with the future <br /> of intelligence
+      </h1>
+
+      <p className="text-xl text-gray-400 max-w-2xl mb-10">
+        Access state-of-the-art open source models through a single, unified API.
+        Designed for developers who demand performance, privacy, and control.
+      </p>
+
+      <div className="flex gap-4 mb-20">
+        <Link href="/dashboard" className="btn btn-primary text-lg px-8 py-3">
+          Get Started <ArrowRight className="w-5 h-5" />
+        </Link>
+        <Link href="/docs" className="btn btn-outline text-lg px-8 py-3">
+          Read Docs
+        </Link>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">
+        <div className="card text-left">
+          <Zap className="w-10 h-10 text-[var(--primary)] mb-4" />
+          <h3 className="text-xl font-bold mb-2">Ultra Low Latency</h3>
+          <p className="text-gray-400">
+            Powered by vLLM for optimized inference speeds. Get tokens faster than ever before.
           </p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="card text-left">
+          <Code className="w-10 h-10 text-[var(--primary)] mb-4" />
+          <h3 className="text-xl font-bold mb-2">Simple API</h3>
+          <p className="text-gray-400">
+            Drop-in compatibility with OpenAI SDKs. Change the base URL and you're good to go.
+          </p>
         </div>
-      </main>
+
+        <div className="card text-left">
+          <Key className="w-10 h-10 text-[var(--primary)] mb-4" />
+          <h3 className="text-xl font-bold mb-2">Key Management</h3>
+          <p className="text-gray-400">
+            Granular control over API keys. Set limits, track usage, and revoke access instantly.
+          </p>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
