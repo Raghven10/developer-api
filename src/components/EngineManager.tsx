@@ -49,7 +49,7 @@ export function EngineManager({ engines }: { engines: Engine[] }) {
             const res = await fetch("/api/admin/engines/health", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ baseUrl, type })
+                body: JSON.stringify({ baseUrl, type, engineId })
             })
             const result = await res.json()
             setHealthResults(prev => ({ ...prev, [engineId]: result }))

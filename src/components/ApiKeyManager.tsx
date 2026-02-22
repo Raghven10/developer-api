@@ -10,11 +10,13 @@ type ApiKey = {
     name: string | null
     createdAt: Date
     lastUsed: Date | null
+    expiresAt: Date | null
     active: boolean
     key: string
+    models?: { id: string, name: string }[]
 }
 
-export function ApiKeyManager({ appId, initialKeys }: { appId: string, initialKeys: ApiKey[] }) {
+export function ApiKeyManager({ appId, initialKeys, publicModels }: { appId: string, initialKeys: ApiKey[], publicModels: any[] }) {
     const [showModal, setShowModal] = useState(false)
     const [newKey, setNewKey] = useState<string | null>(null)
     const [copied, setCopied] = useState(false)
@@ -25,10 +27,10 @@ export function ApiKeyManager({ appId, initialKeys }: { appId: string, initialKe
         return key.substring(0, 7) + "..." + key.substring(key.length - 4)
     }
 
-    const handleCreate = (name: string) => {
+    const handleCreate = (name: string, modelIds: string[]) => {
         startTransition(async () => {
             try {
-                const result = await createApiKey(appId, name)
+                const result = await createApiKey(appId, name, modelIds)
                 setNewKey(result.key)
                 setShowModal(false)
             } catch {
@@ -118,7 +120,8 @@ export function ApiKeyManager({ appId, initialKeys }: { appId: string, initialKe
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Name</th>
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Secret Key</th>
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Created</th>
-                                <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Last Used</th>
+                                <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Expires</th>
+                                <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400" style={{ minWidth: '150px' }}>Models</th>
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Status</th>
                                 <th className="text-right px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400"></th>
                             </tr>
@@ -142,18 +145,31 @@ export function ApiKeyManager({ appId, initialKeys }: { appId: string, initialKe
                                         {new Date(key.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
                                     </td>
                                     <td className="px-5 py-4 text-gray-500">
-                                        {key.lastUsed
-                                            ? new Date(key.lastUsed).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+                                        {key.expiresAt
+                                            ? new Date(key.expiresAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
                                             : "Never"
                                         }
                                     </td>
                                     <td className="px-5 py-4">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {key.models && key.models.length === 0 ? (
+                                                <span className="text-xs text-gray-500">None</span>
+                                            ) : (
+                                                key.models?.map((m: any) => (
+                                                    <span key={m.id} className="text-[10px] font-medium bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 truncate max-w-[120px]" title={m.name}>
+                                                        {m.name}
+                                                    </span>
+                                                ))
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-5 py-4">
                                         <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${key.active
                                             ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
-                                            : 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'
+                                            : 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20'
                                             }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${key.active ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                            {key.active ? "Active" : "Inactive"}
+                                            <span className={`w-1.5 h-1.5 rounded-full ${key.active ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+                                            {key.active ? "Active" : "Pending Approval"}
                                         </span>
                                     </td>
                                     <td className="px-5 py-4 text-right">
@@ -179,6 +195,7 @@ export function ApiKeyManager({ appId, initialKeys }: { appId: string, initialKe
                 onClose={() => setShowModal(false)}
                 onSubmit={handleCreate}
                 isPending={isPending}
+                publicModels={publicModels}
             />
         </div>
     )

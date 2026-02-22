@@ -6,19 +6,30 @@ import { X } from "lucide-react"
 interface CreateKeyModalProps {
     isOpen: boolean
     onClose: () => void
-    onSubmit: (name: string) => void
+    onSubmit: (name: string, modelIds: string[]) => void
     isPending: boolean
+    publicModels: any[]
 }
 
-export function CreateKeyModal({ isOpen, onClose, onSubmit, isPending }: CreateKeyModalProps) {
+export function CreateKeyModal({ isOpen, onClose, onSubmit, isPending, publicModels }: CreateKeyModalProps) {
     const [name, setName] = useState("")
+    const [selectedModels, setSelectedModels] = useState<Set<string>>(new Set())
+
+    import("react").then((react) => {
+        react.useEffect(() => {
+            if (isOpen) {
+                setSelectedModels(new Set(publicModels.map(m => m.id)))
+                setName("")
+            }
+        }, [isOpen, publicModels])
+    })
 
     if (!isOpen) return null
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (name.trim().length === 0) return
-        onSubmit(name.trim())
+        onSubmit(name.trim(), Array.from(selectedModels))
         setName("")
     }
 
@@ -71,6 +82,37 @@ export function CreateKeyModal({ isOpen, onClose, onSubmit, isPending }: CreateK
                         <p className="text-xs text-gray-500 mt-2">
                             A display name for the key. Maximum 50 characters.
                         </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Allowed Models
+                        </label>
+                        {publicModels.length === 0 ? (
+                            <p className="text-sm text-gray-500 italic px-1">No active models found.</p>
+                        ) : (
+                            <div className="max-h-48 overflow-y-auto pr-2 pb-2 grid grid-cols-1 sm:grid-cols-2 gap-3 custom-scrollbar">
+                                {publicModels.map(model => (
+                                    <label key={model.id} className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-slate-800/80 cursor-pointer hover:bg-slate-700/80 transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            name="modelIds"
+                                            value={model.id}
+                                            checked={selectedModels.has(model.id)}
+                                            onChange={(e) => {
+                                                const newSet = new Set(selectedModels)
+                                                if (e.target.checked) newSet.add(model.id)
+                                                else newSet.delete(model.id)
+                                                setSelectedModels(newSet)
+                                            }}
+                                            className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/50"
+                                            disabled={isPending}
+                                        />
+                                        <span className="text-sm font-medium text-gray-300 truncate" title={model.name}>{model.name}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-end pt-2">

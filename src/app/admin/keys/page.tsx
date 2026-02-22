@@ -1,7 +1,8 @@
 
 import { prisma } from "@/lib/prisma"
-import { toggleKeyStatus, deleteApiKeyAdmin } from "@/lib/actions"
-import { Key, Search, Shield } from "lucide-react"
+import { toggleKeyStatus, deleteApiKeyAdmin, getPublicModels } from "@/lib/actions"
+import { Key, Search, Shield, Server } from "lucide-react"
+import { EditKeyModelsModal } from "@/components/EditKeyModelsModal"
 
 async function getKeys() {
     return await prisma.apiKey.findMany({
@@ -11,7 +12,8 @@ async function getKeys() {
                 include: {
                     user: true
                 }
-            }
+            },
+            models: true
         },
         take: 100
     })
@@ -27,7 +29,7 @@ async function getKeyStats() {
 }
 
 export default async function AdminKeysPage() {
-    const [keys, stats] = await Promise.all([getKeys(), getKeyStats()])
+    const [keys, stats, publicModels] = await Promise.all([getKeys(), getKeyStats(), getPublicModels()])
 
     return (
         <div>
@@ -76,6 +78,8 @@ export default async function AdminKeysPage() {
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Owner</th>
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">App</th>
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Created</th>
+                                <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Expires</th>
+                                <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400" style={{ minWidth: '150px' }}>Models</th>
                                 <th className="text-left px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Status</th>
                                 <th className="text-right px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">Actions</th>
                             </tr>
@@ -106,17 +110,42 @@ export default async function AdminKeysPage() {
                                     <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
                                         {key.createdAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                     </td>
+                                    <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
+                                        {key.expiresAt
+                                            ? key.expiresAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                            : "Never"
+                                        }
+                                    </td>
+                                    <td className="px-5 py-4">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {key.models.length === 0 ? (
+                                                <span className="text-xs text-gray-500">None</span>
+                                            ) : (
+                                                key.models.map((m: any) => (
+                                                    <span key={m.id} className="text-[10px] font-medium bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 truncate max-w-[120px]" title={m.name}>
+                                                        {m.name}
+                                                    </span>
+                                                ))
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="px-5 py-4">
                                         <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${key.active
                                             ? 'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20'
-                                            : 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'
+                                            : 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20'
                                             }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${key.active ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                            {key.active ? "Active" : "Inactive"}
+                                            <span className={`w-1.5 h-1.5 rounded-full ${key.active ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+                                            {key.active ? "Active" : "Pending Approval"}
                                         </span>
                                     </td>
                                     <td className="px-5 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            <EditKeyModelsModal
+                                                keyId={key.id}
+                                                keyName={key.name || "Unnamed Key"}
+                                                initialModelIds={key.models.map((m: any) => m.id)}
+                                                publicModels={publicModels}
+                                            />
                                             <form action={async () => {
                                                 "use server"
                                                 await toggleKeyStatus(key.id, !key.active)
