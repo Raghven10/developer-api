@@ -79,14 +79,24 @@ export default function AdminNotificationsPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                        Admin Notifications
-                    </h1>
+        <div className="w-full max-w-[1000px] mx-auto px-4">
+            <div className="mb-12">
+                <div className="flex items-center gap-4 mb-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <Bell className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-extrabold tracking-tight text-white mb-1">
+                            System Alerts
+                        </h1>
+                        <div className="flex items-center gap-2 text-indigo-400 font-bold text-[10px] uppercase tracking-[0.2em]">
+                            <Activity className="w-3 h-3" /> Event Log & Actions
+                        </div>
+                    </div>
                 </div>
-                <p className="text-gray-400 text-sm">Review recent activity and pending approvals.</p>
+                <p className="text-gray-400 max-w-2xl mt-4">
+                    Monitor real-time system events, manage credential approvals, and orchestration requests from the developer ecosystem.
+                </p>
             </div>
 
             {error && (
@@ -111,63 +121,69 @@ export default function AdminNotificationsPage() {
                     {notifications.map((notif) => (
                         <div
                             key={notif.id}
-                            className="card p-5 border-l-4 hover:bg-white/[0.02] transition-colors"
-                            style={{ borderLeftColor: notif.metadata?.action.includes("create") ? '#10b981' : '#6366f1' }}
+                            className="group relative overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-300 p-6"
                         >
-                            <div className="flex justify-between items-start gap-4">
-                                <div className="flex gap-4">
-                                    <div className="mt-1">
+                            {/* Accent Glow */}
+                            <div className={`absolute top-0 left-0 w-1 h-full transition-all duration-300 ${notif.metadata?.action.includes("create") ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]'
+                                }`} />
+
+                            <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+                                <div className="flex gap-5">
+                                    <div className="shrink-0">
                                         {notif.metadata?.action.includes("create") ? (
-                                            <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                                                <Key className="w-4 h-4" />
+                                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                                                <Key className="w-6 h-6" />
                                             </div>
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                                                <Bell className="w-4 h-4" />
+                                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+                                                <Bell className="w-6 h-6" />
                                             </div>
                                         )}
                                     </div>
                                     <div>
-                                        <p className="font-medium text-white text-lg mb-1">{notif.message}</p>
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400">
+                                        <p className="font-bold text-white text-lg tracking-tight mb-2 group-hover:text-indigo-300 transition-colors">
+                                            {notif.message}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-3">
                                             {notif.metadata?.userEmail && (
-                                                <span className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded">
-                                                    Requested by: <span className="text-gray-200">{notif.metadata.userEmail}</span>
+                                                <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-lg border border-white/5 text-gray-400">
+                                                    Origin: <span className="text-gray-200">{notif.metadata.userEmail}</span>
                                                 </span>
                                             )}
+                                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                {new Date(notif.timestamp).toLocaleString()}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-right shrink-0">
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3 justify-end">
-                                        <Clock className="w-3.5 h-3.5" />
-                                        {new Date(notif.timestamp).toLocaleString()}
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        {notif.metadata?.action === "requestModelAccess" && (
-                                            <button
-                                                onClick={() => handleApprove(notif)}
-                                                className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/20 transition-colors uppercase tracking-wider shadow-sm"
-                                            >
-                                                <Activity className="w-3.5 h-3.5" />
-                                                Approve Model Request
-                                            </button>
-                                        )}
+
+                                <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                                    {notif.metadata?.action === "requestModelAccess" && (
                                         <button
-                                            onClick={() => handleRead(notif)}
-                                            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
-                                            title="Dismiss notification"
+                                            onClick={() => handleApprove(notif)}
+                                            className="px-6 py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-black uppercase tracking-[0.15em] hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                            Dismiss
+                                            <CheckCircle className="w-4 h-4" />
+                                            Grant Approval
                                         </button>
+                                    )}
+                                    <div className="flex items-center gap-2">
                                         <Link
                                             href="/admin/keys"
                                             onClick={() => handleRead(notif)}
-                                            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors"
+                                            className="p-2.5 rounded-xl bg-white/5 text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 transition-all"
+                                            title="Inspect related credentials"
                                         >
-                                            Review Keys <ExternalLink className="w-3.5 h-3.5" />
+                                            <ExternalLink className="w-4 h-4" />
                                         </Link>
+                                        <button
+                                            onClick={() => handleRead(notif)}
+                                            className="p-2.5 rounded-xl bg-white/5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
+                                            title="Clear notification"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>

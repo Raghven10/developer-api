@@ -1,59 +1,37 @@
-
-import Link from "next/link"
-import { ArrowRight, Code, Key, Zap } from "lucide-react"
+import { HeroOverlay } from "@/components/landing/HeroOverlay"
+import { ParticleHeroLoader } from "@/components/landing/ParticleHeroLoader"
+import { LandingNavbar } from "@/components/landing/LandingNavbar"
+import { FeatureCards } from "@/components/landing/FeatureCards"
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full p-1 mb-8 animate-pulse">
-        <div className="bg-black rounded-full px-4 py-1 text-sm font-medium">
-          New: Llama-3-70b is now available
-        </div>
+    <main className="relative min-h-screen break-words flex flex-col bg-[#F8F9FA]">
+      <LandingNavbar />
+
+      {/* The 3D Canvas covers the top section entirely */}
+      <div className="relative w-full h-[90vh] min-h-[600px] flex-shrink-0">
+        <ParticleHeroLoader />
+        <HeroOverlay />
       </div>
 
-      <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-        Build with the future <br /> of intelligence
-      </h1>
-
-      <p className="text-xl text-gray-400 max-w-2xl mb-10">
-        Access state-of-the-art open source models through a single, unified API.
-        Designed for developers who demand performance, privacy, and control.
-      </p>
-
-      <div className="flex gap-4 mb-20">
-        <Link href="/dashboard" className="btn btn-primary text-lg px-8 py-3">
-          Get Started <ArrowRight className="w-5 h-5" />
-        </Link>
-        <Link href="/docs" className="btn btn-outline text-lg px-8 py-3">
-          Read Docs
-        </Link>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-8 w-full max-w-5xl">
-        <div className="card text-left">
-          <Zap className="w-10 h-10 text-[var(--primary)] mb-4" />
-          <h3 className="text-xl font-bold mb-2">Ultra Low Latency</h3>
-          <p className="text-gray-400">
-            Powered by vLLM for optimized inference speeds. Get tokens faster than ever before.
+      {/* Content Below the Hero */}
+      <div id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-24 pb-32">
+        <div className="mb-20 text-center">
+          <h2 className="text-3xl md:text-5xl font-medium mb-6 text-[#121317] tracking-tight">
+            Built for Scale. Engineered for Speed.
+          </h2>
+          <p className="text-[#45474D] text-lg max-w-2xl mx-auto font-normal leading-relaxed">
+            Access state-of-the-art open source models through a single, unified API.
+            Designed for developers who demand performance, privacy, and control.
           </p>
         </div>
 
-        <div className="card text-left">
-          <Code className="w-10 h-10 text-[var(--primary)] mb-4" />
-          <h3 className="text-xl font-bold mb-2">Simple API</h3>
-          <p className="text-gray-400">
-            Drop-in compatibility with OpenAI SDKs. Change the base URL and you're good to go.
-          </p>
-        </div>
-
-        <div className="card text-left">
-          <Key className="w-10 h-10 text-[var(--primary)] mb-4" />
-          <h3 className="text-xl font-bold mb-2">Key Management</h3>
-          <p className="text-gray-400">
-            Granular control over API keys. Set limits, track usage, and revoke access instantly.
-          </p>
-        </div>
+        <FeatureCards />
       </div>
-    </div>
+
+      <footer className="mt-auto border-t border-gray-100 py-10 text-center text-sm text-[#45474D] bg-white">
+        <p>&copy; 2026 Silent Skylab. Built for the modern web.</p>
+      </footer>
+    </main>
   )
 }

@@ -8,6 +8,7 @@ import { ArrowLeft, Box } from "lucide-react"
 import { ApiKeyManager } from "@/components/ApiKeyManager"
 import { PlatformModelsList } from "@/components/PlatformModelsList"
 import { getPublicModels } from "@/lib/actions"
+import { ApiTestPlayground } from "@/components/ApiTestPlayground"
 
 async function getApp(appId: string, userId: string) {
     return await prisma.app.findUnique({
@@ -61,6 +62,10 @@ export default async function AppDetailsPage(props: { params: Promise<{ appId: s
             <div className="grid gap-8">
                 <div className="card">
                     <ApiKeyManager appId={app.id} initialKeys={app.apiKeys} publicModels={publicModels} />
+                </div>
+
+                <div className="mt-4">
+                    <ApiTestPlayground apiKeys={app.apiKeys} />
                 </div>
 
                 <PlatformModelsList app={app} publicModels={publicModels} />

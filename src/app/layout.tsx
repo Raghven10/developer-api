@@ -1,9 +1,7 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/Navbar";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Developer AI Platform",
@@ -17,14 +15,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={GeistSans.className}>
         <Providers>
           <Navbar />
-          <main className="min-h-[calc(100vh-64px)] pt-6">
+          <main className="min-h-[calc(100vh-64px)]">
             {children}
           </main>
         </Providers>
-      </body>
-    </html>
+      </body >
+    </html >
   );
 }
