@@ -6,13 +6,16 @@ import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Box } from "lucide-react"
 import { ApiKeyManager } from "@/components/ApiKeyManager"
+import { PlatformModelsList } from "@/components/PlatformModelsList"
+import { getPublicModels } from "@/lib/actions"
 
 async function getApp(appId: string, userId: string) {
     return await prisma.app.findUnique({
         where: { id: appId },
         include: {
             apiKeys: {
-                orderBy: { createdAt: 'desc' }
+                orderBy: { createdAt: 'desc' },
+                include: { models: true }
             }
         }
     })
@@ -25,7 +28,10 @@ export default async function AppDetailsPage(props: { params: Promise<{ appId: s
         redirect("/api/auth/signin")
     }
 
-    const app = await getApp(params.appId, session.user.id)
+    const [app, publicModels] = await Promise.all([
+        getApp(params.appId, session.user.id),
+        getPublicModels()
+    ])
 
     if (!app) {
         notFound()
@@ -54,21 +60,10 @@ export default async function AppDetailsPage(props: { params: Promise<{ appId: s
 
             <div className="grid gap-8">
                 <div className="card">
-                    <ApiKeyManager appId={app.id} initialKeys={app.apiKeys} />
+                    <ApiKeyManager appId={app.id} initialKeys={app.apiKeys} publicModels={publicModels} />
                 </div>
 
-                <div className="card">
-                    <h3 className="text-xl font-bold mb-4">Model Access</h3>
-                    <p className="text-gray-400 mb-4">You have access to the following models:</p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        {['Llama-3-70b', 'Mistral-Large', 'Gemma-7b'].map(model => (
-                            <div key={model} className="p-4 bg-[var(--surface-hover)] rounded border border-[var(--border)] flex items-center justify-between">
-                                <span className="font-medium">{model}</span>
-                                <span className="text-xs bg-green-900/50 text-green-400 px-2 py-1 rounded-full">Active</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <PlatformModelsList app={app} publicModels={publicModels} />
             </div>
         </div>
     )

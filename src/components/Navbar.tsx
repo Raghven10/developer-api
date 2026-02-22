@@ -5,6 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { MonitorPlay, LogOut, User } from "lucide-react"
+import { NotificationDropdown } from "./NotificationDropdown"
 
 export function Navbar() {
     const { data: session } = useSession()
@@ -35,6 +36,10 @@ export function Navbar() {
                             <Link href="/dashboard" className="text-sm hover:text-[var(--primary)] transition-colors">
                                 Dashboard
                             </Link>
+
+                            {session.user?.role === "admin" && (
+                                <NotificationDropdown />
+                            )}
 
                             <div className="flex items-center gap-2 pl-4 border-l border-[var(--border)]">
                                 <div className="text-xs text-right hidden sm:block">
