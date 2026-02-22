@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Shield, Server, Key, Cpu } from "lucide-react"
+import { Shield, Server, Key, Cpu, Bell } from "lucide-react"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
     const session = await getServerSession(authOptions)
@@ -28,6 +28,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                         </Link>
                         <Link href="/admin/keys" className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-indigo-500/10 hover:text-indigo-400 text-gray-300 text-sm">
                             <Key className="w-4 h-4" /> Manage Keys
+                        </Link>
+                        <Link href="/admin/notifications" className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-indigo-500/10 hover:text-indigo-400 text-gray-300 text-sm">
+                            <Bell className="w-4 h-4" /> Notifications
                         </Link>
                     </div>
                 </aside>

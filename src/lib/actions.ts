@@ -1,4 +1,3 @@
-
 "use server"
 
 import { getServerSession } from "next-auth"
@@ -7,6 +6,14 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { randomBytes } from "crypto"
+import { notifyAdmin, notifyUser } from "@/lib/redis"
+
+export async function getPublicModels() {
+    return await prisma.model.findMany({
+        where: { isActive: true },
+        orderBy: { name: 'asc' }
+    });
+}
 
 export async function createApp(formData: FormData) {
     const session = await getServerSession(authOptions)
@@ -19,18 +26,51 @@ export async function createApp(formData: FormData) {
         throw new Error("Name is required")
     }
 
-    await prisma.app.create({
+    const modelIds = formData.getAll("modelIds") as string[]
+
+    const app = await prisma.app.create({
         data: {
             name,
             userId: session.user.id
         }
     })
 
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
+    const keyString = "sk-" + randomBytes(24).toString("hex")
+
+    const newKey = await prisma.apiKey.create({
+        data: {
+            key: keyString,
+            name: "Default Key",
+            appId: app.id,
+            active: false,
+            expiresAt,
+            models: {
+                connect: modelIds.map(id => ({ id }))
+            }
+        }
+    })
+
+    // Notify administrators
+    await notifyAdmin(`New Default API Key requested for App: ${app.name}`, {
+        appId: app.id,
+        appName: app.name,
+        userEmail: session.user.email,
+        keyId: newKey.id,
+        action: "createApp"
+    })
+
     revalidatePath("/dashboard")
-    redirect("/dashboard")
+
+    // Return both the app info and the plain key so the UI can display it
+    return {
+        appId: app.id,
+        appName: app.name,
+        apiKey: newKey.key
+    }
 }
 
-export async function createApiKey(appId: string, name: string) {
+export async function createApiKey(appId: string, name: string, modelIds: string[] = []) {
     const session = await getServerSession(authOptions)
     if (!session || !session.user?.id) {
         throw new Error("Unauthorized")
@@ -46,13 +86,29 @@ export async function createApiKey(appId: string, name: string) {
     }
 
     const key = "sk-" + randomBytes(24).toString("hex")
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
 
     const newKey = await prisma.apiKey.create({
         data: {
             key,
             name,
-            appId
+            appId,
+            active: false,
+            expiresAt,
+            models: {
+                connect: modelIds.map(id => ({ id }))
+            }
         }
+    })
+
+    // Notify administrators
+    await notifyAdmin(`New API Key '${name}' requested for App: ${app.name}`, {
+        appId: app.id,
+        appName: app.name,
+        userEmail: session.user.email,
+        keyId: newKey.id,
+        keyName: name,
+        action: "createApiKey"
     })
 
     revalidatePath(`/dashboard/${appId}`)
@@ -80,6 +136,65 @@ export async function revokeApiKey(keyId: string, appId: string) {
     })
 
     revalidatePath(`/dashboard/${appId}`)
+}
+
+export async function requestModelAccess(appId: string, keyId: string, modelId: string, modelName: string) {
+    const session = await getServerSession(authOptions)
+    if (!session || !session.user?.id) {
+        throw new Error("Unauthorized")
+    }
+
+    // Verify ownership via app
+    const key = await prisma.apiKey.findUnique({
+        where: { id: keyId },
+        include: { app: true }
+    })
+
+    if (!key || key.app.userId !== session.user.id) {
+        throw new Error("Unauthorized")
+    }
+
+    // Notify administrators about the model request
+    await notifyAdmin(`Model Access Requested: '${modelName}' for API Key '${key.name || "Default Key"}'`, {
+        appId: key.app.id,
+        appName: key.app.name,
+        userEmail: session.user.email,
+        userId: session.user.id,
+        keyId: key.id,
+        keyName: key.name,
+        modelId,
+        modelName,
+        action: "requestModelAccess"
+    })
+}
+
+export async function approveModelAccess(keyId: string, modelId: string, modelName: string, userId: string, notificationId: string) {
+    const session = await getServerSession(authOptions)
+    if (!session || session.user?.role !== "admin") {
+        throw new Error("Unauthorized")
+    }
+
+    // Connect model to API Key
+    const updatedKey = await prisma.apiKey.update({
+        where: { id: keyId },
+        data: {
+            models: {
+                connect: { id: modelId }
+            }
+        },
+        include: { app: true }
+    })
+
+    // Notify the user that their request was approved
+    await notifyUser(userId, `Approved: Model '${modelName}' is now active for API Key '${updatedKey.name || "Default Key"}'`, {
+        action: "modelAccessApproved",
+        keyId,
+        modelId
+    })
+
+    // Revalidate paths
+    revalidatePath(`/dashboard/${updatedKey.appId}`)
+    revalidatePath("/admin/keys")
 }
 
 // Admin Actions
@@ -155,7 +270,7 @@ export async function createEngine(formData: FormData) {
 
     if (!name || !type || !baseUrl) throw new Error("Missing fields")
 
-    await prisma.inferenceEngine.create({
+    const newEngine = await prisma.inferenceEngine.create({
         data: {
             name,
             type,
@@ -165,6 +280,66 @@ export async function createEngine(formData: FormData) {
             isActive: true
         }
     })
+
+    // Fetch models and add them
+    try {
+        let healthUrl: string
+        switch (type) {
+            case "ollama":
+                healthUrl = `${baseUrl.replace(/\/$/, "")}/api/tags`
+                break
+            case "vllm":
+            case "sglang":
+            case "openai":
+                healthUrl = `${baseUrl.replace(/\/$/, "")}/v1/models`
+                break
+            default:
+                healthUrl = `${baseUrl.replace(/\/$/, "")}/health`
+        }
+
+        const headers: Record<string, string> = {}
+        if (apiKey) {
+            headers["Authorization"] = `Bearer ${apiKey}`
+        }
+
+        const response = await fetch(healthUrl, { method: "GET", headers, signal: AbortSignal.timeout(8000) })
+
+        if (response.ok) {
+            let models: string[] = []
+            const data = await response.json()
+
+            if (type === "ollama" && data.models) {
+                models = data.models.map((m: any) => m.name || m.model)
+            } else if (data.data) {
+                models = data.data.map((m: any) => m.id)
+            }
+
+            for (const modelId of models) {
+                // Check if model already exists
+                const existingModel = await prisma.model.findUnique({
+                    where: { apiId: modelId }
+                })
+
+                if (!existingModel) {
+                    const endpoint = type === "ollama"
+                        ? `${baseUrl.replace(/\/$/, "")}/api/generate`
+                        : `${baseUrl.replace(/\/$/, "")}/v1/chat/completions`
+
+                    await prisma.model.create({
+                        data: {
+                            name: modelId,
+                            apiId: modelId,
+                            endpoint,
+                            isActive: true,
+                            engineId: newEngine.id
+                        }
+                    })
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Failed to fetch models for newly created engine:", e)
+    }
 
     revalidatePath("/admin/models")
 }
@@ -265,4 +440,22 @@ export async function editApiKeyName(keyId: string, name: string, appId: string)
     })
 
     revalidatePath(`/dashboard/${appId}`)
+}
+
+export async function updateApiKeyModelsAdmin(keyId: string, modelIds: string[]) {
+    const session = await getServerSession(authOptions)
+    if (!session || session.user?.role !== "admin") {
+        throw new Error("Unauthorized")
+    }
+
+    await prisma.apiKey.update({
+        where: { id: keyId },
+        data: {
+            models: {
+                set: modelIds.map(id => ({ id }))
+            }
+        }
+    })
+
+    revalidatePath("/admin/keys")
 }
