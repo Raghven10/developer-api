@@ -5,21 +5,51 @@
 /* Global Styles */
 
 :root {
-  --background: #020617;
-  /* Slate 950 */
+  --background: #050505;
   --foreground: #f8fafc;
-  /* Slate 50 */
   --primary: #6366f1;
-  /* Indigo 500 */
   --primary-hover: #4f46e5;
-  /* Indigo 600 */
-  --surface: rgba(30, 41, 59, 0.7);
-  /* Slate 800 with opacity */
-  --surface-hover: rgba(51, 65, 85, 0.8);
-  /* Slate 700 with opacity */
-  --border: rgba(148, 163, 184, 0.1);
-  /* Slate 400 with low opacity */
+  --surface: rgba(15, 15, 20, 0.7);
+  --surface-hover: rgba(25, 25, 35, 0.8);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
   --radius: 12px;
+  --accent: #8b5cf6;
+}
+
+
+html,
+body {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+/* Custom Scrollbar Utility */
+.custom-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 body {
@@ -28,6 +58,8 @@ body {
   font-family: inherit;
   margin: 0;
   min-height: 100vh;
+  /* Antigravity Noise Texture Overlay */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
 /* Utilities */
@@ -75,16 +107,18 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 2rem;
+  padding: 2rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 .card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  /* Primary color low opacity */
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5);
 }
 
 .input {
@@ -104,10 +138,11 @@ body {
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(23, 23, 23, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 h1,

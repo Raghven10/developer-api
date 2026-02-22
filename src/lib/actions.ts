@@ -321,9 +321,7 @@ export async function createEngine(formData: FormData) {
                 })
 
                 if (!existingModel) {
-                    const endpoint = type === "ollama"
-                        ? `${baseUrl.replace(/\/$/, "")}/api/generate`
-                        : `${baseUrl.replace(/\/$/, "")}/v1/chat/completions`
+                    const endpoint = `${baseUrl.replace(/\/$/, "")}/v1/chat/completions`
 
                     await prisma.model.create({
                         data: {

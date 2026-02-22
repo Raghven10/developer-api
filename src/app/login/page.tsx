@@ -2,58 +2,107 @@
 
 import { signIn } from "next-auth/react"
 import Link from "next/link"
-import { ArrowLeft, Key } from "lucide-react"
+import { ArrowLeft, Key, Shield, Zap, Sparkles, Lock } from "lucide-react"
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-            {/* Background with gradient elements */}
+        <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Dynamic Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-900/20 blur-[100px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-900/20 blur-[100px]" />
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-fuchsia-600/10 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+
+                {/* Grid Overlay */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] contrast-150" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
             </div>
 
-            <div className="w-full max-w-md">
-                <Link href="/" className="inline-flex items-center text-sm text-gray-400 hover:text-white mb-8 transition-colors">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+            <div className="w-full max-w-md relative">
+                {/* Return Link */}
+                <Link
+                    href="/"
+                    className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white mb-12 transition-all group"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    Back to Core System
                 </Link>
 
-                <div className="card border-t-purple-500/50">
-                    <div className="text-center mb-8">
-                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
-                            <Key className="w-6 h-6 text-white" />
-                        </div>
-                        <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-                        <p className="text-gray-400 text-sm">Sign in to access your developer console</p>
-                    </div>
+                {/* Login Container */}
+                <div className="relative group">
+                    {/* Glowing Perimeter */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-fuchsia-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
 
-                    <div className="space-y-4">
-                        <button
-                            onClick={() => signIn("keycloak", { callbackUrl: "/dashboard" })}
-                            className="w-full btn btn-primary py-3 relative overflow-hidden group"
-                        >
-                            <span className="relative z-10">Sign in with Keycloak</span>
-                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                        </button>
-
-                        <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-[var(--border)]"></div>
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-[var(--surface)] px-2 text-gray-500">Secure Access</span>
-                            </div>
+                    <div className="relative glass border-white/5 rounded-[2.5rem] p-10 shadow-2xl overflow-hidden">
+                        {/* Decorative internal elements */}
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Sparkles className="w-20 h-20 text-indigo-400" />
                         </div>
 
-                        <p className="text-center text-xs text-gray-500">
-                            By continuing, you agree to our Terms of Service and Privacy Policy.
-                        </p>
+                        <div className="text-center mb-10">
+                            <div className="relative inline-block mb-6">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-600 flex items-center justify-center shadow-2xl shadow-indigo-500/20 relative z-10 transition-transform hover:rotate-3">
+                                    <Key className="w-8 h-8 text-white" />
+                                </div>
+                                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl flex items-center justify-center z-20">
+                                    <Shield className="w-4 h-4 text-emerald-400" />
+                                </div>
+                            </div>
+
+                            <h1 className="text-3xl font-black tracking-tighter text-white mb-2 uppercase">
+                                Access Portal
+                            </h1>
+                            <p className="text-gray-400 text-sm font-medium tracking-tight">
+                                Authentication required for neural console access
+                            </p>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="relative">
+                                <button
+                                    onClick={() => signIn("keycloak", { callbackUrl: "/dashboard" })}
+                                    className="w-full relative group/btn"
+                                >
+                                    <div className="absolute inset-0 bg-white rounded-2xl transition-all group-hover/btn:bg-indigo-50 " />
+                                    <div className="relative px-8 py-4 flex items-center justify-center gap-3 text-black font-black text-xs uppercase tracking-[0.15em]">
+                                        <Zap className="w-4 h-4 fill-black" />
+                                        Initialize via Keycloak
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div className="relative flex items-center gap-4 py-2">
+                                <div className="h-px flex-1 bg-white/5" />
+                                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Security Protocol</span>
+                                <div className="h-px flex-1 bg-white/5" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center gap-2">
+                                    <Lock className="w-4 h-4 text-gray-500" />
+                                    <span className="text-[8px] font-black text-gray-600 uppercase tracking-tighter">AES-256 Encrypted</span>
+                                </div>
+                                <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center gap-2">
+                                    <Shield className="w-4 h-4 text-gray-500" />
+                                    <span className="text-[8px] font-black text-gray-600 uppercase tracking-tighter">OAuth 2.0 Standard</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <p className="text-center mt-6 text-sm text-gray-500">
-                    Don't have an account? Contact your administrator.
-                </p>
+                {/* Footer Notes */}
+                <div className="mt-10 text-center space-y-4">
+                    <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.1em] max-w-xs mx-auto leading-relaxed">
+                        By proceeding, you authorize session establishing and agree to neural network compliance.
+                    </p>
+                    <div className="flex items-center justify-center gap-4 pt-4">
+                        <div className="h-1 w-1 rounded-full bg-indigo-500/50" />
+                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                            Restricted Node v4.2.0
+                        </p>
+                        <div className="h-1 w-1 rounded-full bg-fuchsia-500/50" />
+                    </div>
+                </div>
             </div>
         </div>
     )
